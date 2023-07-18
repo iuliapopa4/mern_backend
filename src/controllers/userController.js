@@ -1,16 +1,12 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET_KEY } = require('../config/config');
+const { secretKey } = require('../config/config');
 
 const hashPassword = async (password) => {
   try {
     const salt = await bcrypt.genSalt(10);
-    console.log('Salt:', salt);
-
     const hashedPassword = await bcrypt.hash(password, salt);
-    console.log('Hashed Password:', hashedPassword);
-
     return hashedPassword;
   } catch (error) {
     console.error('Error hashing password:', error);
@@ -64,7 +60,7 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
 
     res.status(200).json({ token });
   } catch (error) {
@@ -74,7 +70,7 @@ const loginUser = async (req, res) => {
 };
 
 module.exports = {
-  hashPassword,
   registerUser,
   loginUser,
+  hashPassword,
 };
