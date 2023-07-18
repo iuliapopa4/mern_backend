@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { secretKey } = require('../config/config');
+const debug = require('debug')('app:userController');
 
 const hashPassword = async (password) => {
   try {
@@ -9,7 +10,7 @@ const hashPassword = async (password) => {
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
   } catch (error) {
-    console.error('Error hashing password:', error);
+    debug('Error hashing password:', error);
     throw new Error('Failed to hash password');
   }
 };
@@ -27,8 +28,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hashedPassword = await hashPassword(password);
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({
       name,
       email,
@@ -39,10 +39,11 @@ const registerUser = async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully', user: savedUser });
   } catch (error) {
-    console.error('Registration error:', error);
+    debug('Registration error:', error);
     res.status(500).json({ message: 'Failed to register user' });
   }
 };
+
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -51,12 +52,15 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      debug('Invalid credentials. User not found');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    debug('isPasswordValid:', isPasswordValid);
 
     if (!isPasswordValid) {
+      debug('Invalid credentials. Incorrect password');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -64,7 +68,7 @@ const loginUser = async (req, res) => {
 
     res.status(200).json({ token });
   } catch (error) {
-    console.error('Login error:', error);
+    debug('Login error:', error);
     res.status(500).json({ message: 'Failed to login' });
   }
 };

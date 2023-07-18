@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const database = require('./config/database');
 const eventRoutes = require('./routes/eventRoutes');
 const userRoutes = require('./routes/userRoutes');
-const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -14,7 +13,6 @@ app.use(cors());
 
 app.use('/events', eventRoutes);
 app.use('/users', userRoutes);
-app.use('/auth', authRoutes);
 
 const port = process.env.PORT;
 app.listen(port, () => {
