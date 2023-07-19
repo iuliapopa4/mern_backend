@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
-const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 const { secretKey } = require('../config/config');
 const debug = require('debug')('app:userController');
 
@@ -18,7 +18,7 @@ const hashPassword = async (password) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, roles } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
@@ -31,7 +31,7 @@ const registerUser = async (req, res) => {
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one numeric digit, and one special character' });
+      return res.status(400).json({ message: 'Password must meet the criteria' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -40,10 +40,12 @@ const registerUser = async (req, res) => {
     }
 
     const hashedPassword = await hashPassword(password);
+
     const user = new User({
       name,
       email,
       password: hashedPassword,
+      roles: roles || ['invite'], // Set default role to 'invite'
     });
 
     const savedUser = await user.save();
@@ -57,11 +59,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -116,7 +113,7 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, password } = req.body;
+    const { name, email, password, roles } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
@@ -125,6 +122,7 @@ const updateUser = async (req, res) => {
 
     user.name = name || user.name;
     user.email = email || user.email;
+    user.roles = roles || user.roles;
 
     if (password) {
       const hashedPassword = await hashPassword(password);
@@ -160,5 +158,4 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
-  hashPassword,
 };

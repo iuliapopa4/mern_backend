@@ -1,26 +1,32 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    roles: {
+      type: [String],
+      default: ['invite'],
+    },
+    groups: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+      },
+    ],
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  roles: {
-    type: [String],
-    enum: ['admin', 'invite'],
-    default: ['invite'],
-  },
-});
+  { timestamps: true }
+);
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
