@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { secretKey } = require('../config/config');
+const User = require('../models/userModel');
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization;
 
   if (!token) {
@@ -10,7 +11,17 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, secretKey);
-    req.user = decoded;
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    req.user = {
+      id: user._id,
+      roles: user.roles,
+    };
+
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid token' });

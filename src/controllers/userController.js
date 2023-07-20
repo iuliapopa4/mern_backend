@@ -77,7 +77,9 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user._id, roles: user.roles }, secretKey);
+
+    console.log("Generated Token: ", token); // Add this line to log the generated token
 
     res.status(200).json({ token });
   } catch (error) {
@@ -85,6 +87,7 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to login' });
   }
 };
+
 
 const getUsers = async (req, res) => {
   try {
