@@ -31,13 +31,14 @@ const createEvent = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, description, date, location } = req.body;
+  const { name, description, date, location, members } = req.body;
 
   const event = new Event({
     name,
     description,
     date,
     location,
+    members,
   });
 
   try {
@@ -55,7 +56,7 @@ const updateEvent = async (req, res) => {
   }
 
   const { id } = req.params;
-  const { name, description, date, location } = req.body;
+  const { name, description, date, location, members } = req.body;
 
   try {
     const event = await Event.findById(id);
@@ -67,6 +68,7 @@ const updateEvent = async (req, res) => {
     event.description = description;
     event.date = date;
     event.location = location;
+    event.members = members;
 
     const updatedEvent = await event.save();
     res.json(updatedEvent);
@@ -90,7 +92,59 @@ const deleteEvent = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const addMemberToEvent = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
+  const { id, memberEmail } = req.body;
+
+  try {
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (event.members.includes(memberEmail)) {
+      return res.status(400).json({ message: 'Member already exists in the event' });
+    }
+
+    event.members.push(memberEmail);
+    const updatedEvent = await event.save();
+
+    res.json({ message: 'Member added to the event successfully', event: updatedEvent });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to add member to the event' });
+  }
+};
+
+const removeMemberFromEvent = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { id, memberEmail } = req.body;
+
+  try {
+    const event = await Event.findById(id);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (!event.members.includes(memberEmail)) {
+      return res.status(400).json({ message: 'Member does not exist in the event' });
+    }
+
+    event.members = event.members.filter((email) => email !== memberEmail);
+    const updatedEvent = await event.save();
+
+    res.json({ message: 'Member removed from the event successfully', event: updatedEvent });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to remove member from the event' });
+  }
+};
 
 const sendInvitation = async (req, res) => {
   try {
@@ -130,7 +184,6 @@ const sendInvitation = async (req, res) => {
   }
 };
 
-
 module.exports = {
   getEvents,
   getEventById,
@@ -138,4 +191,10 @@ module.exports = {
   updateEvent,
   deleteEvent,
   sendInvitation,
+  addMemberToEvent,
+  removeMemberFromEvent,
 };
+
+
+
+

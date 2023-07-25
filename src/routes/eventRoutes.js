@@ -13,5 +13,8 @@ router.post('/', isAdminMiddleware, eventController.createEvent);
 router.put('/:id', isAdminMiddleware, eventController.updateEvent);
 router.delete('/:id', isAdminMiddleware, eventController.deleteEvent);
 router.post('/send-invitation', isAdminMiddleware, eventController.sendInvitation);
+router.post('/add-member', isAdminMiddleware, eventController.addMemberToEvent);
+router.post('/remove-member', isAdminMiddleware, eventController.removeMemberFromEvent);
+
 
 module.exports = router;
