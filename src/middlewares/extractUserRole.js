@@ -10,14 +10,12 @@ const extractUserRole = (req, res, next) => {
 
   const token = authHeader.split(' ')[1];
 
-  console.log('Token before verification:', token);
-
   try {
     const decoded = jwt.verify(token, secretKey);
     req.userRole = decoded.roles || ['invite'];
+    req.userEmail = decoded.email; 
     next();
   } catch (error) {
-    console.log('Error verifying token:', error);
     return res.status(401).json({ message: 'Invalid token' });
   }
 };

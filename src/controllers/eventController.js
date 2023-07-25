@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const Event = require('../models/eventModel');
+const nodemailer = require('nodemailer');
 
 const getEvents = async (req, res) => {
   try {
@@ -90,10 +91,51 @@ const deleteEvent = async (req, res) => {
   }
 };
 
+
+const sendInvitation = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Authorization token not found' });
+    }
+    const accessToken = authHeader.split(' ')[1];
+
+    const { toEmail, eventName } = req.body;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: req.userEmail,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+        accessToken: accessToken, 
+      },
+    });
+
+    const mailOptions = {
+      from: req.userEmail, 
+      to: toEmail, 
+      subject: 'Invitation to Event',
+      text: `You are invited to the event "${eventName}".`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'Invitation email sent successfully' });
+  } catch (error) {
+    console.error('Error sending invitation email:', error);
+    res.status(500).json({ message: 'Failed to send invitation email' });
+  }
+};
+
+
 module.exports = {
   getEvents,
   getEventById,
   createEvent,
   updateEvent,
   deleteEvent,
+  sendInvitation,
 };

@@ -12,5 +12,6 @@ router.use(extractUserRole);
 router.post('/', isAdminMiddleware, eventController.createEvent);
 router.put('/:id', isAdminMiddleware, eventController.updateEvent);
 router.delete('/:id', isAdminMiddleware, eventController.deleteEvent);
+router.post('/send-invitation', isAdminMiddleware, eventController.sendInvitation);
 
 module.exports = router;

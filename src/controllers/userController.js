@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      roles: roles || ['invite'], // Set default role to 'invite'
+      roles: roles || ['invite'], 
     });
 
     const savedUser = await user.save();
@@ -78,8 +78,6 @@ const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id, roles: user.roles }, secretKey);
-
-    console.log("Generated Token: ", token); // Add this line to log the generated token
 
     res.status(200).json({ token });
   } catch (error) {
