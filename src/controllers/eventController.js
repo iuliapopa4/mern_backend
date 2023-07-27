@@ -146,6 +146,8 @@ const removeMemberFromEvent = async (req, res) => {
   }
 };
 
+
+
 const sendInvitation = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;

@@ -11,6 +11,12 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, secretKey);
+    console.log('Decoded Token:', decoded); 
+
+    if (!decoded.userId) {
+      return res.status(401).json({ message: 'Invalid token. Missing userId' });
+    }
+
     const user = await User.findById(decoded.userId);
 
     if (!user) {
@@ -18,12 +24,13 @@ const authMiddleware = async (req, res, next) => {
     }
 
     req.user = {
-      id: user._id,
       roles: user.roles,
+      name: user.name,
     };
 
     next();
   } catch (error) {
+    console.error('Token Verification Error:', error); 
     return res.status(401).json({ message: 'Invalid token' });
   }
 };

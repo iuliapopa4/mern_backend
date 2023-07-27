@@ -152,6 +152,23 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const getUserNameById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ name: user.name, message: 'User name fetched successfully' });
+  } catch (error) {
+    debug('Get user name error:', error);
+    res.status(500).json({ message: 'Failed to fetch user name' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -159,4 +176,5 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  getUserNameById,
 };
